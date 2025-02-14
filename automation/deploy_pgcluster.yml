@@ -1,28 +1,28 @@
 ---
-- name: Deploy PostgreSQL HA Cluster (based on "Patroni")
-  hosts: localhost
-  gather_facts: true
-  any_errors_fatal: true
-  pre_tasks:
-    - name: Include main variables
-      ansible.builtin.include_vars: "vars/main.yml"
-      tags: always
-    # set_fact: 'pgbackrest_install' to configure Postgres backups (TODO: Add the ability to configure backups in the UI)
-    # Note: Applicable only for "aws", "gcp", "azure", because:
-      # "digitalocean" - requires the Spaces access keys "AWS_ACCESS_KEY_ID" and "AWS_SECRET_ACCESS_KEY"
-      # "hetzner" - currently, Hetzner Cloud does not provide S3 storage
-    - name: "Set variable: 'pgbackrest_install' to configure Postgres backups"
-      ansible.builtin.set_fact:
-        pgbackrest_install: true
-      when:
-        - not (pgbackrest_install | bool or wal_g_install | bool)
-        - cloud_provider | default('') | lower in ['aws', 'gcp', 'azure']
-        - pgbackrest_auto_conf | default(true) | bool  # to be able to disable auto backup settings
-      tags: always
-  roles:
-    - role: cloud-resources
-      when: cloud_provider | default('') | length > 0
-      tags: always
+# - name: Deploy PostgreSQL HA Cluster (based on "Patroni")
+#   hosts: localhost
+#   gather_facts: true
+#   any_errors_fatal: true
+#   pre_tasks:
+#     - name: Include main variables
+#       ansible.builtin.include_vars: "vars/main.yml"
+#       tags: always
+#     # set_fact: 'pgbackrest_install' to configure Postgres backups (TODO: Add the ability to configure backups in the UI)
+#     # Note: Applicable only for "aws", "gcp", "azure", because:
+#       # "digitalocean" - requires the Spaces access keys "AWS_ACCESS_KEY_ID" and "AWS_SECRET_ACCESS_KEY"
+#       # "hetzner" - currently, Hetzner Cloud does not provide S3 storage
+#     - name: "Set variable: 'pgbackrest_install' to configure Postgres backups"
+#       ansible.builtin.set_fact:
+#         pgbackrest_install: true
+#       when:
+#         - not (pgbackrest_install | bool or wal_g_install | bool)
+#         - cloud_provider | default('') | lower in ['aws', 'gcp', 'azure']
+#         - pgbackrest_auto_conf | default(true) | bool  # to be able to disable auto backup settings
+#       tags: always
+#   roles:
+#     - role: cloud-resources
+#       when: cloud_provider | default('') | length > 0
+#       tags: always
 
 - name: deploy_pgcluster.yml | Perform pre-checks
   hosts: all
@@ -33,17 +33,17 @@
   environment: "{{ proxy_env | default({}) }}"
 
   pre_tasks:
-    - name: Include main variables
-      ansible.builtin.include_vars: "vars/main.yml"
-      tags: always
+    # - name: Include main variables
+    #   ansible.builtin.include_vars: "vars/main.yml"
+    #   tags: always
 
-    - name: Include system variables
-      ansible.builtin.include_vars: "vars/system.yml"
-      tags: always
+    # - name: Include system variables
+    #   ansible.builtin.include_vars: "vars/system.yml"
+    #   tags: always
 
-    - name: Include OS-specific variables
-      ansible.builtin.include_vars: "vars/{{ ansible_os_family }}.yml"
-      tags: always
+    # - name: Include OS-specific variables
+    #   ansible.builtin.include_vars: "vars/{{ ansible_os_family }}.yml"
+    #   tags: always
 
     - name: System info
       ansible.builtin.debug:
@@ -74,14 +74,14 @@
 
     # if 'cloud_provider' is 'aws', 'gcp', or 'azure'
     # set_fact: 'pgbackrest_install' to configure Postgres backups (TODO: Add the ability to configure backups in the UI)
-    - name: "Set variable: 'pgbackrest_install' to configure Postgres backups"
-      ansible.builtin.set_fact:
-        pgbackrest_install: true
-      when:
-        - not (pgbackrest_install | bool or wal_g_install | bool)
-        - cloud_provider | default('') | lower in ['aws', 'gcp', 'azure']
-        - pgbackrest_auto_conf | default(true) | bool  # to be able to disable auto backup settings
-      tags: always
+    # - name: "Set variable: 'pgbackrest_install' to configure Postgres backups"
+    #   ansible.builtin.set_fact:
+    #     pgbackrest_install: true
+    #   when:
+    #     - not (pgbackrest_install | bool or wal_g_install | bool)
+    #     - cloud_provider | default('') | lower in ['aws', 'gcp', 'azure']
+    #     - pgbackrest_auto_conf | default(true) | bool  # to be able to disable auto backup settings
+    #   tags: always
 
     - name: Clean dnf cache
       ansible.builtin.command: dnf clean all

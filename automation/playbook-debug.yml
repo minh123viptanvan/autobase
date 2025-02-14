@@ -1,0 +1,48 @@
+- name: Debug playbook 
+  hosts: etcd_cluster
+  become: true
+  become_method: sudo
+  any_errors_fatal: true
+  gather_facts: true
+  vars:
+    variable:
+      - name: alice
+        folder: /home/alice
+      - name: bob
+        folder: /home/bob
+      - name: charlie
+        folder: /home/charlie
+    search_name: alice
+  tasks: 
+    - name: Fetch TLS certificate, key and CA from the master node into memory
+      run_once: true
+      ansible.builtin.slurp:
+        src: "{{ item }}"
+      delegate_to: "{{ groups.master[0] }}"
+      register: tls_files
+      loop:
+        - "{{ tls_privatekey_path | default('/etc/tls/server.key') }}"
+        - "{{ tls_cert_path | default('/etc/tls/server.crt') }}"
+        - "{{ tls_ca_cert_path | default('/etc/tls/ca.crt') }}"
+      tags: tls, tls_cert_copy, debug, never
+
+    - name: Debug
+      ansible.builtin.set_fact:
+        subject_alt_name: >-
+          "{{ tls_files.results[0] }}"
+      tags:
+        - never
+        - debug
+
+    - name: Debug
+      debug: 
+        msg: |
+          {{ subject_alt_name }}
+
+      tags:
+        - never
+        - debug
+
+    - name: Load tls role
+      ansible.builtin.import_role:
+        name: tls_certificate/generate

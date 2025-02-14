@@ -1,0 +1,130 @@
+all:
+  hosts:
+    192.168.10.11:
+      ansible_host: 192.168.10.11
+      ansible_user: vagrant
+      ansible_password: vagrant
+      ansible_become_password: vagrant
+      hostname: node1
+    
+    192.168.10.12:
+      ansible_host: 192.168.10.12
+      ansible_user: vagrant
+      ansible_password: vagrant
+      ansible_become_password: vagrant
+      hostname: node2
+
+    192.168.10.13:
+      ansible_host: 192.168.10.13
+      ansible_user: vagrant
+      ansible_password: vagrant
+      ansible_become_password: vagrant
+      hostname: node3
+
+  vars:
+    ansible_python_interpreter: "{{ ansible_version['full'] is version('2.17', '>=') | ternary('/usr/bin/python3', '/usr/bin/env python3') }}"
+    # You can also use your own repository for extra packages. You need to preload all the packages and change this URLs.
+    installation_method: "repo"
+    # DCS (Distributed Consensus Store)
+    dcs_exists: false  # or 'true' if you don't want to deploy a new etcd cluster
+    dcs_type: "etcd"  # or 'consul'
+
+    # if dcs_type: "etcd" and dcs_exists: false
+    etcd_version: "3.5.18"  # version for deploy etcd cluster
+    etcd_data_dir: "/var/lib/etcd"
+    etcd_cluster_name: "etcd-{{ patroni_cluster_name }}"  # ETCD_INITIAL_CLUSTER_TOKEN
+    # Extra packages
+    etcd_package_repo: "https://github.com/etcd-io/etcd/releases/download/v{{ etcd_version }}/etcd-v{{ etcd_version }}-linux-amd64.tar.gz"
+
+    # if dcs_type: "etcd" and dcs_exists: true
+    patroni_etcd_hosts: []  # list of servers of an existing etcd cluster
+    #  - { host: "10.128.64.140", port: "2379" }
+    #  - { host: "10.128.64.142", port: "2379" }
+    #  - { host: "10.128.64.143", port: "2379" }
+    patroni_etcd_namespace: "service"  # (optional) etcd namespace (prefix)
+    patroni_etcd_username: "" # (optional) username for etcd authentication
+    patroni_etcd_password: "" # (optional) password for etcd authentication
+    patroni_etcd_protocol: "{{ 'https' if tls_cert_generate | bool else 'http' }}"
+
+    # Cluster variables
+    cluster_vip: ""  # IP address for client access to the databases in the cluster (optional).
+    vip_interface: "{{ ansible_default_ipv4.interface }}"  # interface name (e.g., "ens32").
+    # Note: VIP-based solutions such as keepalived or vip-manager may not function correctly in cloud environments.
+
+    patroni_cluster_name: "postgres-cluster"  # the cluster name (must be unique for each cluster)
+
+    patroni_superuser_username: "postgres"
+    patroni_superuser_password: ""  # Please specify a password. If not defined, will be generated automatically during deployment.
+    patroni_replication_username: "replicator"
+    patroni_replication_password: ""  # Please specify a password. If not defined, will be generated automatically during deployment.
+
+    synchronous_mode: false  # or 'true' for enable synchronous database replication
+    synchronous_mode_strict: false  # if 'true' then block all client writes to the master, when a synchronous replica is not available
+    synchronous_node_count: 1  # number of synchronous standby databases
+
+    # Load Balancing
+    with_haproxy_load_balancing: false  # or 'true' if you want to install and configure the load-balancing
+    haproxy_listen_port:
+      master: 5000
+      replicas: 5001
+      replicas_sync: 5002
+      replicas_async: 5003
+    # The following ('_direct') ports are used for direct connections to the PostgreSQL database,
+    # bypassing the PgBouncer connection pool (if 'pgbouncer_install' is 'true').
+    # Uncomment the relevant lines if you need to set up direct connections.
+    #  master_direct: 6000
+    #  replicas_direct: 6001
+    #  replicas_sync_direct: 6002
+    #  replicas_async_direct: 6003
+      stats: 7000
+    haproxy_maxconn:
+      global: 100000
+      master: 10000
+      replica: 10000
+    haproxy_timeout:
+      client: "60m"
+      server: "60m"
+
+    # TLS certificate (for PostgreSQL, PgBouncer and etcd)
+    tls_cert_generate: true
+    tls_cert_valid_days: 3650
+    tls_cert_path: "/etc/tls/server.crt"
+    tls_privatekey_path: "/etc/tls/server.key"
+    tls_ca_cert_path: "/etc/tls/ca.crt"
+    tls_owner: "postgres"
+    tls_etcd_cert_path: "/etc/etcd/tls/server.crt"
+    tls_etcd_ca_cert_path: "/etc/etcd/tls/ca.crt"
+    tls_etcd_privatekey_path: "/etc/etcd/tls/server.key"
+
+    # ansible_ssh_common_args: -o "StrictHostKeyChecking no" -o ProxyCommand="ssh -W %h:%p -q 172.24.178.200"
+    # proxy_env:
+    #   http_proxy: http://proxy.hcm.fpt.vn:80
+    #   https_proxy: http://proxy.hcm.fpt.vn:80
+    #   no_proxy: mirror.cads.live
+
+etcd_cluster:
+  hosts:
+    192.168.10.11:
+    192.168.10.12:
+    192.168.10.13:
+
+postgres_cluster:
+  children:
+    master:
+      hosts:
+        192.168.10.11:
+          is_master: true
+          postgresql_exists: false
+    replica:
+      hosts:
+        192.168.10.12:
+          is_master: false
+          postgresql_exists: false
+
+
+balancers:
+  hosts:
+    192.168.10.11:
+    192.168.10.12:
+
+

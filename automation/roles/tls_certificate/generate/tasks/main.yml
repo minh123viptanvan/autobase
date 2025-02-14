@@ -96,7 +96,7 @@
           - serverAuth
         subject:
           C: "AL"
-          O: "autobase"
+          O: "DBA Postgres"
           CN: "{{ patroni_cluster_name }}"
         subject_alt_name: "{{ subject_alt_name }}"
       register: csr

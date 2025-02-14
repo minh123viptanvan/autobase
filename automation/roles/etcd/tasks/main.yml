@@ -165,4 +165,111 @@
   when: not ansible_check_mode
   tags: etcd, etcd_start, etcd_status
 
+- name: Block enable authentication etcd
+  tags: etcd_authentication
+  ignore_errors: true
+  environment:
+    ETCDCTL_API: 3
+    ENDPOINTS: "{{ patroni_etcd_protocol | default('http', true) }}://localhost:2379"
+    PATH: $PATH:/usr/local/bin
+  block:
+    - name: Add role root
+      ansible.builtin.command:
+        cmd: > 
+          /usr/local/bin/etcdctl endpoint health
+          --endpoints={{ patroni_etcd_protocol | default('http', true) }}://{{ inventory_hostname }}:2379
+          {% if tls_cert_generate | default(false) | bool %}
+          --cacert={{ tls_etcd_ca_cert_path | default('/etc/etcd/tls/ca.crt') }}
+          --cert={{ tls_etcd_cert_path | default('/etc/etcd/tls/server.crt') }}
+          --key={{ tls_etcd_privatekey_path | default('/etc/etcd/tls/server.key') }}
+          {% endif %} 
+          role add root
+    - name: Add user root
+      ansible.builtin.command:
+        cmd: >
+            /usr/local/bin/etcdctl endpoint health
+            --endpoints={{ patroni_etcd_protocol | default('http', true) }}://{{ inventory_hostname }}:2379
+            {% if tls_cert_generate | default(false) | bool %}
+            --cacert={{ tls_etcd_ca_cert_path | default('/etc/etcd/tls/ca.crt') }}
+            --cert={{ tls_etcd_cert_path | default('/etc/etcd/tls/server.crt') }}
+            --key={{ tls_etcd_privatekey_path | default('/etc/etcd/tls/server.key') }}
+            {% endif %} 
+            user add root:{{ etcd_root_password | default('toor') }}
+      no_log: true
+    - name: Grant role root to user root
+      ansible.builtin.command:
+        cmd: >
+            /usr/local/bin/etcdctl endpoint health
+            --endpoints={{ patroni_etcd_protocol | default('http', true) }}://{{ inventory_hostname }}:2379
+            {% if tls_cert_generate | default(false) | bool %}
+            --cacert={{ tls_etcd_ca_cert_path | default('/etc/etcd/tls/ca.crt') }}
+            --cert={{ tls_etcd_cert_path | default('/etc/etcd/tls/server.crt') }}
+            --key={{ tls_etcd_privatekey_path | default('/etc/etcd/tls/server.key') }}
+            {% endif %} 
+            user grant-role root root
+    - name: Enable authentication in etcd
+      ansible.builtin.command:
+        cmd: >
+            /usr/local/bin/etcdctl endpoint health
+            --endpoints={{ patroni_etcd_protocol | default('http', true) }}://{{ inventory_hostname }}:2379
+            {% if tls_cert_generate | default(false) | bool %}
+            --cacert={{ tls_etcd_ca_cert_path | default('/etc/etcd/tls/ca.crt') }}
+            --cert={{ tls_etcd_cert_path | default('/etc/etcd/tls/server.crt') }}
+            --key={{ tls_etcd_privatekey_path | default('/etc/etcd/tls/server.key') }}
+            {% endif %}
+            auth enable
+
+- name: Block remove etcd cluster
+  when: remove_etcd | default(false)
+  tags:
+    - remove_etcd
+  block:
+    - name: Step delete etcd
+      ansible.builtin.debug:
+        msg: |
+          B1: Stop service etcd
+          B2: Delete folder data {{ etcd_data_dir }}/member
+          B3: Delete file bin etcd, etcdctl, etcdutl in /usr/local/bin, /tmp/{{ etcd_package_repo.split('.tar.gz')[0] | basename }}
+          B4: Delete user etcd
+      run_once: true
+    - name: Confirm delete etcd
+      ansible.builtin.pause:
+        prompt: Confirm delete etcd (Y/N)
+        echo: true
+      register: confirm_delete_etcd
+      retries: 0
+      until: confirm_delete_etcd['user_input'] == 'Y'
+      failed_when: confirm_delete_etcd['user_input'] == 'N'
+      run_once: true
+    - name: Stop Etcd service
+      ansible.builtin.service:
+        name: etcd
+        state: stopped
+        enabled: false
+      when:
+        - confirm_delete_etcd['user_input'] == 'Y'
+    - name: Delete Etcd content
+      ansible.builtin.file:
+        path: "{{ etcd_data_dir }}/member"
+        state: absent
+      when:
+        - confirm_delete_etcd['user_input'] == 'Y'
+    - name: Delete file bin and source code etcd
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /usr/local/bin/etcd
+        - /usr/local/bin/etcdctl
+        - /usr/local/bin/etcdutl
+        - /tmp/{{ etcd_package_repo.split('.tar.gz')[0] | basename }}
+        - /tmp/{{ etcd_package_repo | basename }}
+      when:
+        - confirm_delete_etcd['user_input'] == 'Y'
+    - name: Delete user etcd
+      ansible.builtin.user:
+        name: etcd
+        state: absent
+      when:
+        - confirm_delete_etcd['user_input'] == 'Y'
 ...
