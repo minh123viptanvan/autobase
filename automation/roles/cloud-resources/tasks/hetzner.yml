@@ -50,6 +50,21 @@
       environment:
         PATH: "{{ ansible_env.PATH }}:/usr/local/bin:/usr/bin"
         PIP_BREAK_SYSTEM_PACKAGES: "1"
+
+    - name: Ensure that 'boto3' dependency is present on controlling host
+      ansible.builtin.pip:
+        name: boto3
+        executable: pip3
+        extra_args: --user
+      become: false
+      vars:
+        ansible_become: false
+      environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/local/bin:/usr/bin"
+        PIP_BREAK_SYSTEM_PACKAGES: "1"
+      when:
+        - (pgbackrest_install | bool or wal_g_install | bool)
+        - hetzner_object_storage_create | bool
   delegate_to: 127.0.0.1
   run_once: true
 
@@ -98,7 +113,7 @@
       ansible.builtin.set_fact:
         ssh_key_names: "{{ ssh_key_names | default([]) + [item.name] }}"
       loop: "{{ ssh_keys.hcloud_ssh_key_info }}"
-      no_log: true  # do not display the public key
+      no_log: true # do not display the public key
       when:
         - ssh_key_name | length > 0
         - ssh_keys.hcloud_ssh_key_info is defined
@@ -118,7 +133,7 @@
       ansible.builtin.set_fact:
         ssh_key_names: "{{ ssh_key_names | default([]) + [item.name] }}"
       loop: "{{ ssh_keys.hcloud_ssh_key_info }}"
-      loop_control:  # do not display the public key
+      loop_control: # do not display the public key
         label: "{{ item.name }}"
       when:
         - (ssh_key_name | length < 1 or ssh_key_name == (tmp_ssh_key_name | default('')))
@@ -160,12 +175,12 @@
       when:
         - server_network | length > 0
         - not (network_info.hcloud_network_info
-            | selectattr("name", "equalto", server_network)
-            | selectattr("subnetworks", "defined")
-            | map(attribute='subnetworks')
-            | flatten
-            | selectattr("network_zone", "equalto", target_network_zone)
-            | list | length > 0)
+          | selectattr("name", "equalto", server_network)
+          | selectattr("subnetworks", "defined")
+          | map(attribute='subnetworks')
+          | flatten
+          | selectattr("network_zone", "equalto", target_network_zone)
+          | list | length > 0)
 
     - name: "Hetzner Cloud: Extract ip_range for network '{{ server_network }}'"
       ansible.builtin.set_fact:
@@ -221,7 +236,7 @@
               }
             ] if ssh_public_access | bool else []) +
             ([
-             {
+              {
                 'description': 'Netdata',
                 'direction': 'in',
                 'protocol': 'tcp',
@@ -237,7 +252,7 @@
                 'port': haproxy_listen_port.master,
                 'source_ips': database_public_allowed_ips | default('0.0.0.0/0,::/0', true) | split(',')
               },
-               {
+              {
                 'description': 'HAProxy - replicas',
                 'direction': 'in',
                 'protocol': 'tcp',
@@ -301,7 +316,7 @@
               }
             ]) +
             ([
-             {
+              {
                 'description': 'Netdata',
                 'direction': 'in',
                 'protocol': 'tcp',
@@ -317,7 +332,7 @@
                 'port': haproxy_listen_port.master,
                 'source_ips': [server_network_ip_range]
               },
-               {
+              {
                 'description': 'HAProxy - replicas',
                 'direction': 'in',
                 'protocol': 'tcp',
@@ -428,6 +443,26 @@
       when:
         - cloud_firewall | bool
 
+    # Object Storage (S3 bucket for backups)
+    - name: "Hetzner Cloud: Create Object Storage (S3 bucket) '{{ hetzner_object_storage_name }}'"
+      amazon.aws.s3_bucket:
+        endpoint_url: "{{ hetzner_object_storage_endpoint }}"
+        ceph: true
+        aws_access_key: "{{ hetzner_object_storage_access_key }}"
+        aws_secret_key: "{{ hetzner_object_storage_secret_key }}"
+        name: "{{ hetzner_object_storage_name }}"
+        region: "{{ hetzner_object_storage_region }}"
+        requester_pays: false
+        state: present
+      register: s3_bucket_result
+      failed_when: s3_bucket_result.failed and not "GetBucketRequestPayment" in s3_bucket_result.msg
+      # TODO: https://github.com/ansible-collections/amazon.aws/issues/2447
+      when:
+        - (pgbackrest_install | bool or wal_g_install | bool)
+        - hetzner_object_storage_create | bool
+        - hetzner_object_storage_access_key | length > 0
+        - hetzner_object_storage_secret_key | length > 0
+
     # Server and volume
     - name: "Hetzner Cloud: Create or modify server"
       hetzner.hcloud.server:
@@ -501,9 +536,9 @@
       loop_control:
         label: "{{ patroni_cluster_name }}-{{ item }}"
       when: cloud_load_balancer | bool and
-            (item == 'primary' or
-            (item == 'replica' and server_count | int > 1) or
-            (item in ['sync', 'async'] and server_count | int > 1 and synchronous_mode | bool))
+        (item == 'primary' or
+        (item == 'replica' and server_count | int > 1) or
+        (item in ['sync', 'async'] and server_count | int > 1 and synchronous_mode | bool))
 
     - name: "Hetzner Cloud: Configure Load Balancer service"
       hetzner.hcloud.load_balancer_service:
@@ -532,9 +567,9 @@
       vars:
         database_port: "{{ pgbouncer_listen_port | default(6432) if pgbouncer_install | bool else postgresql_port | default(5432) }}"
       when: cloud_load_balancer | bool and
-            (item == 'primary' or
-            (item == 'replica' and server_count | int > 1) or
-            (item in ['sync', 'async'] and server_count | int > 1 and synchronous_mode | bool))
+        (item == 'primary' or
+        (item == 'replica' and server_count | int > 1) or
+        (item in ['sync', 'async'] and server_count | int > 1 and synchronous_mode | bool))
 
     - name: "Hetzner Cloud: Add Load Balancer to network '{{ server_network }}'"
       hetzner.hcloud.load_balancer_network:
@@ -549,9 +584,9 @@
       loop_control:
         label: "{{ patroni_cluster_name }}-{{ item }}"
       when: cloud_load_balancer | bool and
-            (item == 'primary' or
-            (item == 'replica' and server_count | int > 1) or
-            (item in ['sync', 'async'] and server_count | int > 1 and synchronous_mode | bool))
+        (item == 'primary' or
+        (item == 'replica' and server_count | int > 1) or
+        (item in ['sync', 'async'] and server_count | int > 1 and synchronous_mode | bool))
 
     - name: "Hetzner Cloud: Disable public interface for Load Balancer"
       hetzner.hcloud.load_balancer:
@@ -570,9 +605,9 @@
       delay: 5
       retries: 3
       when: (cloud_load_balancer | bool and not database_public_access | bool) and
-            (item == 'primary' or
-            (item == 'replica' and server_count | int > 1) or
-            (item in ['sync', 'async'] and server_count | int > 1 and synchronous_mode | bool))
+        (item == 'primary' or
+        (item == 'replica' and server_count | int > 1) or
+        (item in ['sync', 'async'] and server_count | int > 1 and synchronous_mode | bool))
 
     - name: "Hetzner Cloud: Enable public interface for Load Balancer"
       hetzner.hcloud.load_balancer:
@@ -591,9 +626,9 @@
       delay: 5
       retries: 3
       when: (cloud_load_balancer | bool and database_public_access | bool) and
-            (item == 'primary' or
-            (item == 'replica' and server_count | int > 1) or
-            (item in ['sync', 'async'] and server_count | int > 1 and synchronous_mode | bool))
+        (item == 'primary' or
+        (item == 'replica' and server_count | int > 1) or
+        (item in ['sync', 'async'] and server_count | int > 1 and synchronous_mode | bool))
 
     - name: "Hetzner Cloud: Add servers to Load Balancer (use label_selector 'cluster={{ patroni_cluster_name }}')"
       hetzner.hcloud.load_balancer_target:
@@ -609,9 +644,9 @@
       loop_control:
         label: "{{ patroni_cluster_name }}-{{ item }}"
       when: cloud_load_balancer | bool and
-            (item == 'primary' or
-            (item == 'replica' and server_count | int > 1) or
-            (item in ['sync', 'async'] and server_count | int > 1 and synchronous_mode | bool))
+        (item == 'primary' or
+        (item == 'replica' and server_count | int > 1) or
+        (item in ['sync', 'async'] and server_count | int > 1 and synchronous_mode | bool))
 
     - name: "Hetzner Cloud: Gather information about Load Balancers"
       hetzner.hcloud.load_balancer_info:
@@ -620,6 +655,7 @@
       until: hetzner_load_balancer is success
       delay: 5
       retries: 3
+      when: cloud_load_balancer | bool
   when: state == 'present'
 
 - name: Wait for host to be available via SSH
@@ -726,9 +762,9 @@
       loop_control:
         label: "{{ patroni_cluster_name }}-{{ item }}"
       when: cloud_load_balancer | bool and
-            (item == 'primary' or
-            (item == 'replica' and server_count | int > 1) or
-            (item in ['sync', 'async'] and server_count | int > 1 and synchronous_mode | bool))
+        (item == 'primary' or
+        (item == 'replica' and server_count | int > 1) or
+        (item in ['sync', 'async'] and server_count | int > 1 and synchronous_mode | bool))
 
     - name: "Hetzner Cloud: Delete Load Balancer"
       hetzner.hcloud.load_balancer:
@@ -743,9 +779,9 @@
       loop_control:
         label: "{{ patroni_cluster_name }}-{{ item }}"
       when: cloud_load_balancer | bool and
-            (item == 'primary' or
-            (item == 'replica' and server_count | int > 1) or
-            (item in ['sync', 'async'] and server_count | int > 1 and synchronous_mode | bool))
+        (item == 'primary' or
+        (item == 'replica' and server_count | int > 1) or
+        (item in ['sync', 'async'] and server_count | int > 1 and synchronous_mode | bool))
 
     - name: "Hetzner Cloud: Delete public firewall"
       hetzner.hcloud.firewall:
@@ -758,6 +794,21 @@
         api_token: "{{ lookup('ansible.builtin.env', 'HCLOUD_API_TOKEN') }}"
         state: "absent"
         name: "{{ patroni_cluster_name }}-firewall"
-  when: state == 'absent'
 
-...
+    - name: "Hetzner Cloud: Delete Object Storage (S3 bucket) '{{ hetzner_object_storage_name }}'"
+      amazon.aws.s3_bucket:
+        endpoint_url: "{{ hetzner_object_storage_endpoint }}"
+        ceph: true
+        access_key: "{{ hetzner_object_storage_access_key }}"
+        secret_key: "{{ hetzner_object_storage_secret_key }}"
+        name: "{{ hetzner_object_storage_name }}"
+        region: "{{ hetzner_object_storage_region }}"
+        requester_pays: false
+        state: absent
+        force: true
+      when:
+        - (pgbackrest_install | bool or wal_g_install | bool)
+        - hetzner_object_storage_absent | bool
+        - hetzner_object_storage_access_key | length > 0
+        - hetzner_object_storage_secret_key | length > 0
+  when: state == 'absent'
