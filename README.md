@@ -10,7 +10,7 @@
 [![Molecule](https://github.com/autobase-tech/autobase/actions/workflows/molecule.yml/badge.svg)](https://github.com/autobase-tech/autobase/actions/workflows/molecule.yml)
 [![GitHub license](https://img.shields.io/github/license/autobase-tech/autobase)](https://github.com/autobase-tech/autobase/blob/main/LICENSE)
 
-**Autobase for PostgreSQL®** is an open-source alternative to cloud-managed databases (DBaaS) such as Amazon RDS, Google Cloud SQL, Azure Database, and others.
+Autobase is an internal PostgreSQL platform — giving you full control as a powerful alternative to cloud-managed databases (DBaaS).
 
 This automated database platform enables you to create and manage production-ready, highly available PostgreSQL clusters. It simplifies the deployment process, reduces operational costs, and makes database management accessible—even for teams without specialized expertise.
 
