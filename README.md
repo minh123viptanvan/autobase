@@ -173,7 +173,7 @@ _Table of results of daily automated testing of cluster deployment:_
 
 Autobase has been actively developed for over 5 years (since 2019) and is trusted by companies worldwide, including in production environments with high loads and demanding reliability requirements. Our mission is to provide an open-source DBaaS that delivers reliability, flexibility, and cost-efficiency.
 
-**The project will remain open-source forever**, but to ensure its continuous growth and development, we rely on [sponsorship](https://autobase.tech/docs/sponsor). By subscribing to [Autobase packages](https://autobase.tech/docs/support), you gain access to personalized support from the project authors and PostgreSQL experts.
+**The project will remain open-source forever**, but to ensure its continuous growth and development, we rely on [sponsorship](https://autobase.tech/docs/sponsor) and [support packages](https://autobase.tech/docs/support), you gain access to personalized support from the project authors and PostgreSQL experts.
 
 ## Star us
 
@@ -186,20 +186,6 @@ If you find our project helpful, consider giving it a star on GitHub! Your suppo
     <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=autobase-tech/autobase&type=Date" />
   </picture>
 </a>
-
-## Sponsor this project
-
-By sponsoring our project, you directly contribute to its continuous improvement and innovation. As a sponsor, you'll receive exclusive benefits, including personalized support, early access to new features, and the opportunity to influence the project's direction. Your sponsorship is invaluable to us and helps ensure the project's sustainability and progress.
-
-Become a sponsor today and help us take this project to the next level!
-
-Support our work through [GitHub Sponsors](https://github.com/sponsors/vitabaks)
-
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/vitabaks?style=for-the-badge)](https://github.com/sponsors/vitabaks)
-
-Support our work through [Patreon](https://www.patreon.com/vitabaks)
-
-[![Support me on Patreon](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%3Fusername%3Dvitabaks%26type%3Dpatrons&style=for-the-badge)](https://patreon.com/vitabaks)
 
 ## License
 
