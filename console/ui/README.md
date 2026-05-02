@@ -54,10 +54,10 @@ The optimized build will be output to the `dist` folder. You can then serve this
 
 - React
 - Redux Toolkit (RTK Query for data fetching)
-- React Router v6
+- React Router
 - Vite (development and build tool)
 - Material UI (UI kit)
-- Material React Table V2
+- Material React Table
 - React-toastify
 
 **Deployment:**
