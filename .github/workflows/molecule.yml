@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - distro: ubuntu2404
+          - distro: ubuntu2604
             tag: latest
             namespace: geerlingguy
           - distro: rockylinux10
