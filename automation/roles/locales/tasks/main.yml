@@ -13,7 +13,11 @@
         name: "{{ item.language_country }}.{{ item.encoding }}"
         state: present
       loop: "{{ locale_gen | flatten(1) }}"
-      when: ansible_os_family == "Debian"
+      when:
+        - ansible_os_family == "Debian"
+        - "'locales' in ansible_facts.packages or 'locales' in system_packages"
+        - "'locales-all' not in ansible_facts.packages"
+        - "'locales-all' not in system_packages"
 
     # RedHat
     - name: Install glibc-langpack
@@ -21,6 +25,10 @@
         name: "{{ item }}"
       loop: "{{ glibc_langpack }}"
       environment: "{{ proxy_env | default({}) }}"
+      register: langpack_install_result
+      until: langpack_install_result is succeeded
+      retries: 3
+      delay: 5
       when:
         - ansible_os_family == "RedHat"
         - item not in ansible_facts.packages
