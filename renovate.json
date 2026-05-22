@@ -43,7 +43,9 @@
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": ["automation/roles/common/defaults/main.yml", "automation/roles/consul/defaults/main.yml"],
+      "managerFilePatterns": [
+        "/^automation\\/roles\\/common\\/defaults\\/main\\.yml$/"
+      ],
       "matchStrings": [
         "^\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(\\s+registryUrls=(?<registryUrls>\\S+))?(\\s+versioning=(?<versioning>\\S+))?(\\s+extractVersion=(?<extractVersion>\\S+))?\\s+.*?_version:\\s+(?<currentValue>.+)$"
       ],

@@ -685,7 +685,7 @@ pg_probackup_instance: "pg_probackup_instance_name"
 pg_probackup_dir: "/mnt/backup_dir"
 pg_probackup_threads: "4"
 pg_probackup_add_keys: "--recovery-target=latest --skip-external-dirs --no-validate"
-# ⚠️ Ensure there is a space at the beginning of each part to prevent commands from concatenating.
+# Ensure there is a space at the beginning of each part to prevent commands from concatenating.
 pg_probackup_command_parts:
   - "pg_probackup-{{ pg_probackup_version }}"
   - " restore -B {{ pg_probackup_dir }}"
@@ -726,7 +726,7 @@ wal_g_prefetch_dir_create: true # or 'false'
 wal_g_prefetch_dir_path: "{{ postgresql_home_dir }}/wal-g-prefetch"
 
 # Define job_parts outside of wal_g_cron_jobs
-# ⚠️ Ensure there is a space at the beginning of each part to prevent commands from concatenating.
+# Ensure there is a space at the beginning of each part to prevent commands from concatenating.
 wal_g_backup_command:
   - "curl -I -s --cacert '{{ patroni_restapi_cafile }}'"
   - " {{ patroni_restapi_protocol }}://{{ patroni_restapi_connect_addr | default(patroni_bind_address | default(bind_address, true), true) }}"
@@ -1033,7 +1033,7 @@ ssh_key_user: "postgres"
 ssh_key_state: "present"
 ssh_known_hosts: "{{ groups['postgres_cluster'] }}"
 
-# List of public SSH keys. These keys will be added to the database server's  ~/.ssh/authorized_keys  file.
+# List of public SSH keys to be added to the database server's ~/.ssh/authorized_keys file.
 ssh_public_keys: []
 
 # sudo
