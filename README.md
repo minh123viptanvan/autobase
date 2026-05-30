@@ -32,7 +32,7 @@ You have the option to deploy Postgres clusters using the Console (UI), command 
 
 ### Console (UI)
 
-The Autobase Console (UI) is the recommended method for most users. It is designed to be user-friendly, minimizing the risk of errors and making it easier than ever to set up your PostgreSQL clusters. This method is suitable for both beginners and those who prefer a visual interface for managing their PostgreSQL clusters.
+The Autobase Console (UI) is the recommended method for most users. It is designed to be user-friendly, minimizing the risk of errors and making it easier than ever to set up your PostgreSQL clusters.
 
 To run the autobase console, execute the following command:
 
@@ -65,10 +65,7 @@ Refer to the [Deployment](https://autobase.tech/docs/category/deployment) sectio
 
 <details><summary>Click here to expand... if you prefer the command line.</summary><p>
 
-The command line mode is suitable for advanced users who require greater flexibility and control over the deployment and management of their PostgreSQL clusters.
-While the Console (UI) is designed for ease of use and is suitable for most users, the command line provides powerful options for those experienced in automation and configuration.
-
-Note: All dependencies and source code are bundled into the `autobase/automation` docker image. This means the deployment process comes down to simply launching a container with a few variable overrides.
+All dependencies and source code are bundled into the `autobase/automation` docker image. This means the deployment process comes down to simply launching a container with a few variable overrides. Alternatively, you can use [Ansible Collection](./automation/README.md).
 
 1. Prepare your inventory
 
@@ -106,8 +103,6 @@ docker run --rm -it \
 
 Tip: Start with `deploy_pgcluster` for initial provisioning, then use `config_pgcluster` for further configuration changes.
 
-Alternatively, you can use [Ansible Collection](./automation/README.md)
-
 ### How to start from scratch
 
 If you need to start from the very beginning, you can use the `remove_cluster` playbook.
@@ -125,12 +120,12 @@ Available variables:
 > [!TIP]
 > 📩 Contact us at info@autobase.tech, and our team will help you implement Autobase into your infrastructure.
 
-### Supported setups of Postgres Cluster
+### Architecture
 
 For a detailed description of the cluster components, visit the [Architecture](https://autobase.tech/docs/overview/architecture) page.
 
-![pg_cluster_scheme](images/pg_cluster_scheme.png#gh-light-mode-only)
-![pg_cluster_scheme](images/pg_cluster_scheme.dark_mode.png#gh-dark-mode-only)
+![pg_cluster_scheme](images/autobase-postgres.light.png#gh-light-mode-only)
+![pg_cluster_scheme](images/autobase-postgres.dark.png#gh-dark-mode-only)
 
 ## Compatibility
 
@@ -171,9 +166,9 @@ _Table of results of daily automated testing of cluster deployment:_
 
 ## Project Status
 
-Autobase has been actively developed for over 5 years (since 2019) and is trusted by companies worldwide, including in production environments with high loads and demanding reliability requirements. Our mission is to provide an open-source DBaaS that delivers reliability, flexibility, and cost-efficiency.
+Autobase has been actively developed for over 7 years (since 2019) and is trusted by companies worldwide, including in production environments with high loads and demanding reliability requirements. Our mission is to provide an open-source DBaaS that delivers reliability, flexibility, and cost-efficiency.
 
-**The project will remain open-source forever**, but to ensure its continuous growth and development, we rely on [sponsorship](https://autobase.tech/docs/sponsor) and [support packages](https://autobase.tech/docs/support), you gain access to personalized support from the project authors and PostgreSQL experts.
+**The project will remain open-source forever**, but to ensure its continuous growth and development, we rely on [sponsorship](https://autobase.tech/docs/sponsor) and [support packages](https://autobase.tech/docs/support). Support packages provide access to personalized support from the project authors and PostgreSQL experts.
 
 ## Star us
 
