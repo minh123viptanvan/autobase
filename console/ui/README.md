@@ -81,14 +81,15 @@ There are several env variables that configure UI:
 
 The UI communicates with the API using the relative path /api/v1 through the Nginx reverse proxy host specified by PG_CONSOLE_API_HOST. If needed, you can override this by setting the PG_CONSOLE_API_URL variable.
 
+### Refresh Interval Dropdown
+
+The Clusters, Cluster Overview, Operations, and Operation Log pages have a refresh-interval dropdown (`Off / 5s / 10s / 30s / 1m / 5m / 15m / 30m / 1h`). The `PG_CONSOLE_*_POLLING_INTERVAL` env vars define the initial value only; user selections are stored per page in `localStorage` (`pollingInterval.<context>`).
+This controls browser fetch frequency, not backend freshness. Cluster views are bounded by `PG_CONSOLE_CLUSTERWATCHER_RUNEVERY` and operation logs by `PG_CONSOLE_LOGWATCHER_RUNEVERY` (both default to `1m`), so faster UI polling may just re-read the same DB state.
+
 ### Docker Secrets
 
-The UI container supports the `_FILE` convention for
-`PG_CONSOLE_AUTHORIZATION_TOKEN` and `VITE_AUTH_TOKEN`. If
-`PG_CONSOLE_AUTHORIZATION_TOKEN_FILE` or `VITE_AUTH_TOKEN_FILE` is set, the
-entrypoint reads the file and uses its contents as the corresponding variable.
-Setting both the base variable and its `_FILE` variant to non-empty values is an
-error.
+The UI container supports the `_FILE` convention for `PG_CONSOLE_AUTHORIZATION_TOKEN` and `VITE_AUTH_TOKEN`.
+If `PG_CONSOLE_AUTHORIZATION_TOKEN_FILE` or `VITE_AUTH_TOKEN_FILE` is set, the entrypoint reads the file and uses its contents as the corresponding variable. Setting both the base variable and its `_FILE` variant to non-empty values is an error.
 
 ## Architecture
 

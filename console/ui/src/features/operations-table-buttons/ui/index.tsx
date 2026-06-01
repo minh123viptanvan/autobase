@@ -1,9 +1,9 @@
 import { FC } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, InputAdornment, MenuItem, Stack, TextField, useTheme } from '@mui/material';
-import RefreshIcon from '@mui/icons-material/Refresh';
+import { InputAdornment, MenuItem, Stack, TextField, useTheme } from '@mui/material';
 import { OperationsTableButtonsProps } from '@features/operations-table-buttons/model/types.ts';
 import CalendarClockIcon from '@shared/assets/calendarClockICon.svg?react';
+import RefreshGroup from '@features/refresh-group';
 import {
   getOperationsDateRangeVariants,
   getOperationsTimeNameValue,
@@ -17,10 +17,6 @@ const OperationsTableButtons: FC<OperationsTableButtonsProps> = ({ refetch, star
 
   const handleChange = (e) => {
     setStartDate(getOperationsTimeNameValue(e.target.value));
-  };
-
-  const handleRefresh = () => {
-    refetch();
   };
 
   return (
@@ -44,9 +40,7 @@ const OperationsTableButtons: FC<OperationsTableButtonsProps> = ({ refetch, star
           </MenuItem>
         ))}
       </TextField>
-      <Button onClick={handleRefresh} startIcon={<RefreshIcon />} variant="text">
-        {t('refresh', { ns: 'shared' })}
-      </Button>
+      <RefreshGroup context="operations" onRefresh={refetch} />
     </Stack>
   );
 };
