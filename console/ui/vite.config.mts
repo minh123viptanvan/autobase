@@ -1,17 +1,13 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react-swc';
+import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import { resolve } from 'path';
-import fixReactVirtualized from 'esbuild-plugin-react-virtualized';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [svgr(), react()],
   optimizeDeps: {
     exclude: ['js-big-decimal'],
-    esbuildOptions: {
-      plugins: [fixReactVirtualized],
-    },
   },
   preview: {
     port: 8080,
